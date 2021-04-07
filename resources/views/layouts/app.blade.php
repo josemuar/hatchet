@@ -13,15 +13,18 @@
         <!-- Styles -->
         <link rel="stylesheet" href="{{ mix('css/app.css') }}">
 
-        @livewireStyles
+        <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
 
-        <!-- Scripts -->
-        <script src="{{ mix('js/app.js') }}" defer></script>
+        @livewireStyles
+        
+
+        
+
     </head>
     <body class="font-sans antialiased">
         <x-jet-banner />
 
-        <div class="min-h-screen bg-gray-100">
+        <div class="min-h-screen bg-gray-100"  >
             @livewire('navigation-menu')
 
             <!-- Page Heading -->
@@ -34,13 +37,25 @@
             @endif
 
             <!-- Page Content -->
-            <main>
+            <div id="app">
                 {{ $slot }}
-            </main>
+            </div>
         </div>
 
         @stack('modals')
 
         @livewireScripts
+
+        <!-- Scripts -->
+        <script src="{{ mix('js/app.js') }}" defer></script>
+
+        @yield('page-js')
+        
     </body>
+
+
+    
+
+    
+
 </html>

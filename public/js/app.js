@@ -3803,11 +3803,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-//
-//
-//
-//
-//
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 //
 //
 //
@@ -3835,15 +3831,15 @@ __webpack_require__.r(__webpack_exports__);
     },
     _fgroup_class: {
       type: String,
-      required: true
+      required: false
     },
     _multiple: {
-      required: true,
-      "default": 1
+      required: false,
+      "default": 0
     },
     _required: {
-      required: true,
-      "default": 1
+      required: false,
+      "default": 0
     },
     _items: {
       required: true
@@ -3859,15 +3855,20 @@ __webpack_require__.r(__webpack_exports__);
       content: this.value,
       multiple: false,
       value: this._value,
-      items: JSON.parse(this._items)
+      items: this._items
     };
   },
   methods: {
     initialise: function initialise() {
       var vm = this;
+      if (this._multiple == 0) vm.items.splice(0, 0, {
+        id: '',
+        text: 'any'
+      });
       $("#" + this.id).select2({
+        maximumSelectionLength: 2,
         theme: 'bootstrap4',
-        data: this.items
+        data: vm.items
       }).val(this.value).trigger("change").on('change', function () {
         vm.$emit('input', $("#" + this.id).val());
         vm.$emit("addtodict", vm.name, $("#" + this.id).val());
@@ -3878,8 +3879,9 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   mounted: function mounted() {
-    this.initialise();
-    this.$on("input", this.handle);
+    this.initialise(); //this.$on("input" , this.handle );
+
+    console.log("mounted select 2...");
   },
   created: function created() {}
 });
@@ -3924,57 +3926,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+//import jlmabutton from './jlmaButton.vue'
+//import jlmaselect2 from './jlmaSelect2.vue'
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  name: 'JTable',
   props: {
     _id: {
       type: String,
@@ -3992,28 +3947,46 @@ __webpack_require__.r(__webpack_exports__);
       type: String,
       required: true
     },
-    _prices: {
+    _address: {
       type: String,
-      required: true
+      required: false
+    },
+    _number_offices: {
+      type: String,
+      required: false
+    },
+    _number_tables: {
+      type: String,
+      required: false
+    },
+    _sqms: {
+      required: false
+    },
+    _prices: {
+      required: false
     }
   },
   watch: {},
   computed: {},
+
+  /*
+    components: {
+        jlmabutton,
+        jlmaselect2
+    },
+  */
   data: function data() {
     return {
       id: this._id,
       name: this._name,
       label: this._title,
       headers: this._headers,
-      address: 'Hay',
-      number_offices: null,
-      number_tables: null,
-      sqm_min: null,
-      sqm_max: null,
-      price_min: null,
-      price_max: null,
-      data: null,
-      prices: this._prices
+      address: this._address,
+      number_offices: this._number_offices,
+      number_tables: this._number_tables,
+      sqms: this._sqms,
+      prices: this._prices,
+      dataset: null
     };
   },
   methods: {
@@ -4035,18 +4008,23 @@ __webpack_require__.r(__webpack_exports__);
       bus.$emit("spinner", 1);
       axios.post('http://127.0.0.1:9000/', {
         params: {
-          'address': this.address,
-          'offices': this.number_offices,
-          'tables': this.number_tables,
-          'sqm_min': this.sqm_min,
-          'sqm_max': this.sqm_max,
-          'price_min': this.price_min,
-          'price_max': this.price_max
+          'address': this._address,
+          'offices': this._number_offices,
+          'tables': this._number_tables,
+          'sqms': this._sqms,
+          'prices': this._prices
         }
       }, config).then(function (response) {
-        this.data = response.data;
-        console.log(response.data);
+        _.map(response.data, function (value, key) {
+          value['price'] = "$ " + value['price'].toFixed(1).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        });
+
+        this.dataset = response.data;
         bounced();
+
+        if (response.data.length == 0) {
+          alert("NO RECORDS WERE FOUND");
+        }
       }.bind(this))["catch"](function (error) {
         bounced();
       });
@@ -4054,6 +4032,8 @@ __webpack_require__.r(__webpack_exports__);
   },
   mounted: function mounted() {
     this.initialise();
+    bus.$on("table_body_load", this.load);
+    console.log("mounted jtable...");
   },
   updated: function updated() {},
   created: function created() {}
@@ -4080,8 +4060,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  name: 'JButton',
   props: {
     _id: {
       type: String,
@@ -4118,10 +4098,7 @@ __webpack_require__.r(__webpack_exports__);
   methods: {
     initialise: function initialise() {},
     handle: function handle(_status) {
-      this.spinner = _status; //this.spinner_class = _class;
-      //if( param === 'initiated')
-      //if( param === 'completed')
-      //if( param === 'with_error')
+      this.spinner = _status;
     },
     clicked: function clicked() {
       bus.$emit("button_clicked", this.id, this.name);
@@ -4129,6 +4106,7 @@ __webpack_require__.r(__webpack_exports__);
   },
   mounted: function mounted() {
     bus.$on("spinner", this.handle);
+    console.log("mounted button...");
   },
   created: function created() {}
 });
@@ -4147,7 +4125,7 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
 
-window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js");
+window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js").default;
 
 __webpack_require__(/*! alpinejs */ "./node_modules/alpinejs/dist/alpine.js");
 
@@ -4158,10 +4136,15 @@ __webpack_require__(/*! select2 */ "./node_modules/select2/dist/js/select2.js");
 vue__WEBPACK_IMPORTED_MODULE_0__.default.component('jtable', __webpack_require__(/*! ./components/jlmaSortingTable.vue */ "./resources/js/components/jlmaSortingTable.vue").default);
 vue__WEBPACK_IMPORTED_MODULE_0__.default.component('jlmabutton', __webpack_require__(/*! ./components/jlmabutton.vue */ "./resources/js/components/jlmabutton.vue").default);
 vue__WEBPACK_IMPORTED_MODULE_0__.default.component('jlmaselect2', __webpack_require__(/*! ./components/jlmaSelect2.vue */ "./resources/js/components/jlmaSelect2.vue").default);
-window.bus = new vue__WEBPACK_IMPORTED_MODULE_0__.default();
-var app = new vue__WEBPACK_IMPORTED_MODULE_0__.default({
-  el: '#app'
-});
+var bus = new vue__WEBPACK_IMPORTED_MODULE_0__.default();
+window.bus = bus;
+var app = new vue__WEBPACK_IMPORTED_MODULE_0__.default({});
+/*
+export default {
+  components: {
+    "jtable" : jtable
+  }
+}*/
 
 /***/ }),
 
@@ -4171,10 +4154,12 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_0__.default({
   \***********************************/
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
-window.$ = window.jQuery = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* provided dependency */ var __webpack_provided_window_dot_jQuery = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+window.$ = __webpack_provided_window_dot_jQuery = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js");
-window.jQuery = $;
+window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+__webpack_provided_window_dot_jQuery = $;
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
  * to our Laravel back-end. This library automatically handles sending the
@@ -39588,6 +39573,7 @@ process.umask = function() { return 0; };
   \*************************************************/
 /***/ ((module, exports, __webpack_require__) => {
 
+/* provided dependency */ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
  * Select2 4.1.0-rc.0
  * https://select2.github.io
@@ -46052,8 +46038,7 @@ var render = function() {
           _vm.value = $event.target.multiple ? $$selectedVal : $$selectedVal[0]
         }
       }
-    }),
-    _vm._v("\n  \n  " + _vm._s(_vm._items) + "\n")
+    })
   ])
 }
 var staticRenderFns = []
@@ -46080,98 +46065,8 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("div", { staticClass: "container" }, [
-      _vm._v("\n\n  " + _vm._s(_vm.prices) + "\n\n\n  "),
-      _c(
-        "div",
-        { staticClass: "card", staticStyle: { "margin-top": "50px" } },
-        [
-          _c("div", { staticClass: "card-header" }, [
-            _vm._v("\n      Search\n    ")
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "card-body" }, [
-            _c("div", { staticClass: "row" }, [
-              _c("div", { staticClass: "col-sm" }, [
-                _c("div", { staticClass: "form-group" }, [
-                  _c("label", { attrs: { for: "" } }, [_vm._v("Name")]),
-                  _vm._v(" "),
-                  _c("input", {
-                    directives: [
-                      {
-                        name: "model",
-                        rawName: "v-model",
-                        value: _vm.address,
-                        expression: "address"
-                      }
-                    ],
-                    staticClass: "form-control",
-                    attrs: {
-                      type: "text",
-                      id: "address",
-                      name: "address",
-                      "aria-describedby": "office address",
-                      placeholder: "Enter office address"
-                    },
-                    domProps: { value: _vm.address },
-                    on: {
-                      input: function($event) {
-                        if ($event.target.composing) {
-                          return
-                        }
-                        _vm.address = $event.target.value
-                      }
-                    }
-                  })
-                ])
-              ]),
-              _vm._v(" "),
-              _c(
-                "div",
-                { staticClass: "col-sm" },
-                [
-                  _c("jlmaselect2", {
-                    attrs: {
-                      _id: "price_min",
-                      _name: "price_min",
-                      _title: "PRICE MIN",
-                      _fgroup_class: "col-md-12 mb-3",
-                      _multiple: "0",
-                      _required: "1",
-                      _value: "",
-                      _items: _vm.prices
-                    }
-                  })
-                ],
-                1
-              )
-            ])
-          ]),
-          _vm._v(" "),
-          _c(
-            "div",
-            { staticClass: "card-footer" },
-            [
-              _c("jlmabutton", {
-                attrs: {
-                  _id: "submit",
-                  _name: "submit",
-                  _spinner: "0",
-                  _title: "Search",
-                  _button_class: "btn  btn-primary m-1"
-                }
-              })
-            ],
-            1
-          )
-        ]
-      )
-    ]),
-    _vm._v(" "),
-    _c("hr"),
-    _vm._v(" "),
     _c("h1", [_vm._v(_vm._s(_vm.label))]),
-    _vm._v(" "),
+    _vm._v("\n  " + _vm._s(_vm._address) + "\n  "),
     _c(
       "table",
       {
@@ -46185,7 +46080,7 @@ var render = function() {
         _vm._v(" "),
         _c(
           "tbody",
-          _vm._l(_vm.data, function(row, index) {
+          _vm._l(_vm.dataset, function(row, index) {
             return _c(
               "tr",
               { key: row.id },
@@ -46214,13 +46109,17 @@ var staticRenderFns = [
       _c("tr", [
         _c("th", [_vm._v(" Name ")]),
         _vm._v(" "),
-        _c("th", [_vm._v(" Price ")]),
-        _vm._v(" "),
         _c("th", [_vm._v(" Offices ")]),
         _vm._v(" "),
         _c("th", [_vm._v(" Tables ")]),
         _vm._v(" "),
-        _c("th", [_vm._v(" Sqm ")])
+        _c("th", [
+          _vm._v(" Sqm (meters"),
+          _c("sup", [_vm._v("2")]),
+          _vm._v(") ")
+        ]),
+        _vm._v(" "),
+        _c("th", [_vm._v(" Price (AUD)")])
       ])
     ])
   }

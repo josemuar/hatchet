@@ -11,8 +11,21 @@ const mix = require('laravel-mix');
  |
  */
 
-mix.js('resources/js/app.js', 'public/js').vue()
-    .postCss('resources/css/app.css', 'public/css', [
-        require('postcss-import'),
-        require('tailwindcss'),
-    ]);
+	mix.autoload({
+	  jquery: ['$', 'window.jQuery', 'jQuery'],
+	});
+
+	mix.js('resources/js/app.js', 'public/js').vue()
+	    .postCss('resources/css/app.css', 'public/css', [
+	        require('postcss-import'),
+	        require('tailwindcss'),
+	]);
+
+    mix.combine(
+    [
+        "resources/assets/js/vendor/jquery-3.3.1.min.js", 
+    ],
+    	"public/assets/js/common-bundle-script.js"
+	);
+
+

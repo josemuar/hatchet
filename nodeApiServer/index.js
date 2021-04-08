@@ -12,33 +12,59 @@ const Office = require("./models/m_office")
 
 app.use(cors())
 
-
-
 app.post('/', (req, res) => {
-
-	//console.log("req.body : " + req.body.price);
 	
-	let queryObject = {};
+	let queryObject = {attributes: ['name', 'offices', 'tables', 'sqm', 'price']};
 	queryObject.where = {};
 	
-	if( req.body.name != null &  req.body.name !='' & typeof req.body.name !== "undefined" ){
-	  queryObject.where.name = { [Op.like]: '%'+req.body.name+'%' };
+	if( req.body.params.address != null &  req.body.params.address !='' & typeof req.body.params.address !== "undefined" ){
+	  queryObject.where.name = { [Op.like]: '%'+req.body.params.address+'%' };
 	} 
 	
-	if( req.body.price != null &  req.body.price != '' & typeof req.body.price !== "undefined" ){
-	  queryObject.where.price = { [Op.eq]: parseInt(req.body.price) };
+	if( req.body.params.offices != null &  req.body.params.offices != '' & typeof req.body.params.offices !== "undefined" ){
+	  queryObject.where.offices = { [Op.eq]: parseInt(req.body.params.offices) };
 	}
 
-	if( req.body.offices != null &  req.body.offices != '' & typeof req.body.offices !== "undefined" ){
-	  queryObject.where.offices = { [Op.eq]: parseInt(req.body.offices) };
+	if( req.body.params.tables != null &  req.body.params.tables != '' & typeof req.body.params.tables !== "undefined" ){
+	  queryObject.where.tables = { [Op.eq]: parseInt(req.body.params.tables) };
 	}
 
-	if( req.body.tables != null &  req.body.tables != '' & typeof req.body.tables !== "undefined" ){
-	  queryObject.where.tables = { [Op.eq]: parseInt(req.body.tables) };
+
+	if( req.body.params.prices != null &  req.body.params.prices != '' & typeof req.body.params.prices !== "undefined" ){
+	  
+	 	if ( (req.body.params.prices).length == 1 )
+		{
+			console.log(req.body.params.prices[0]);
+			queryObject.where.price = { [Op.gte] : req.body.params.prices[0] };
+		}
+
+
+		if ( (req.body.params.prices).length == 2 )
+		{
+			console.log(req.body.params.prices[0]);
+			console.log(req.body.params.prices[1]);
+			queryObject.where.price = { [Op.between] : [req.body.params.prices[0] , req.body.params.prices[1] ] };
+		}
+
+	  
 	}
 
-	if( req.body.sqm != null &  req.body.sqm != '' & typeof req.body.sqm !== "undefined" ){
-	  queryObject.where.sqm = { [Op.eq]: parseInt(req.body.sqm) };
+	if( req.body.params.sqms != null &  req.body.params.sqms != '' & typeof req.body.params.sqms !== "undefined" ){
+	  
+		if ( (req.body.params.sqms).length == 1 )
+		{
+			console.log(req.body.params.sqms[0]);
+			queryObject.where.sqm = { [Op.gte] : req.body.params.sqms[0] };
+		}
+
+
+		if ( (req.body.params.sqms).length == 2 )
+		{
+			console.log(req.body.params.sqms[0]);
+			console.log(req.body.params.sqms[1]);
+			queryObject.where.sqm = { [Op.between] : [req.body.params.sqms[0] , req.body.params.sqms[1] ] };
+		}
+	  
 	}
 
 	Office.findAll( queryObject )

@@ -1,7 +1,6 @@
 <template>
   <div style='display: inline'>
   <button type="button" v-bind:id="id" v-bind:name="name" v-bind:class="[button_class]"  v-on:click="clicked">
-  
     <i  v-bind:class="[spinner_class]"  v-if="spinner==1" ></i>
     {{ label }}
   </button>
@@ -9,10 +8,8 @@
 </template>
 <script>
 
-
-
 export default {
-    
+    name: 'JButton',
     props: {
       _id: {
       type: String,
@@ -50,38 +47,26 @@ export default {
       }
     },
 
+    
+
     methods: 
     {
-      initialise(){  
-      },
+      initialise(){},
 
       handle: function( _status  ){
-        
-
         this.spinner = _status;
-        //this.spinner_class = _class;
-
-        //if( param === 'initiated')
-
-        //if( param === 'completed')
-
-        //if( param === 'with_error')
-
       },
 
       clicked: function(){
-        
         bus.$emit("button_clicked", this.id, this.name );
-
       }
-
     },
 
     mounted(){
       bus.$on("spinner" , this.handle );
+      console.log("mounted button...");
     },
 
-    created: function(){    
-    }
+    created: function(){}
 };
 </script>

@@ -15,23 +15,26 @@ class HatchetController extends Controller
      */
     public function index()
     {
-        //
-        //
-        /*
+        
         $query = DB::table ( "m_office" );
-        $query->select( 
-            "m_lead.name" , 
-            "m_lead.name",
-            "m_lead.phone" ,
-            "m_lead.email",
-             "m_lead.email as em"
-        );*/
+        $query->select(DB::raw('m_office.offices as id, m_office.offices as text'));
+        $offices = $query->distinct()->get();
 
-        $prices = MOffice::distinct()->get(['price']);
-        $offices= MOffice::distinct()->get(['offices']);
-        $tables = MOffice::distinct()->get(['tables']);
-        $sqms   =   MOffice::distinct()->get(['sqm']);
-        $rows   =   MOffice::get();
+        $query = DB::table ( "m_office" );
+        $query->select(DB::raw('m_office.tables as id, m_office.tables as text'));
+        $tables = $query->distinct()->get();
+
+        $query = DB::table ( "m_office" );
+        $query->select(DB::raw('m_office.sqm as id, m_office.sqm as text'));
+        $sqms = $query->orderBy('m_office.sqm', 'ASC')->distinct()->get();
+
+        $query = DB::table ( "m_office" );
+        $query->select(DB::raw('m_office.price as id, m_office.price as text'));
+        $prices = $query->orderBy('m_office.price', 'ASC')->distinct()->get();
+
+        $query = DB::table ( "m_office" );
+        $query->select("name", "offices", "tables" , "sqm", "price");
+        $rows = $query->orderBy("name", "asc")->get();
 
         return view('dashboard', ['rows' => $rows, 'prices' => $prices , 'offices' => $offices, 'tables' => $tables, 'sqms' => $sqms ]);
     }

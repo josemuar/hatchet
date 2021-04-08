@@ -17,10 +17,8 @@
 
         @livewireStyles
         
-
-        
-
     </head>
+
     <body class="font-sans antialiased">
         <x-jet-banner />
 
@@ -46,15 +44,20 @@
 
         @livewireScripts
 
-        <!-- Scripts -->
-        <script src="{{ mix('js/app.js') }}" defer></script>
+        <!-- jquery.js Script -->        
+        <script src="{{ asset('assets/js/common-bundle-script.js') }}"></script>        
 
+        <!-- app.js Scripts -->
+        <script src="{{ mix('js/app.js') }}" defer></script>
+        
+        <!-- page-js Scripts -->
         @yield('page-js')
         
     </body>
 
 
     
+        
 
     
 

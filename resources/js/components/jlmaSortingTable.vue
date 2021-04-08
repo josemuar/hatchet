@@ -1,75 +1,25 @@
 <template>
   <div>
-
-    <!-- BEGIN -->
-    <div class="container">
-
-    {{ prices }}
-
-
-    <div class="card" style="margin-top: 50px" >
-      <div class="card-header">
-        Search
-      </div>
-      <div class="card-body">
-        <div class="row">
-            
-            <!-- 1st column -->
-            <div class="col-sm">
-              <div class="form-group">
-              <label for="">Name</label>
-              <input type="text" v-model='address' class="form-control" id="address" name="address" aria-describedby="office address" placeholder="Enter office address">
-              </div>
-            </div>
-
-            <!-- 2nd column -->
-            <div class="col-sm">
-              <jlmaselect2 _id='price_min' _name='price_min' _title='PRICE MIN' _fgroup_class="col-md-12 mb-3" _multiple=0  _required=1 _value='' :_items=prices ></jlmaselect2> 
-            </div>
-        </div>
-      </div>
-      <div class="card-footer">
-        <jlmabutton _id='submit' _name='submit' _spinner=0 _title='Search' _button_class="btn  btn-primary m-1" > </jlmabutton>
-      </div>
-    </div>
-
-
-
-        
-
-
-    </div>
-
-    <!-- END -->
-
-    <hr/>
-
     <h1>{{label}}</h1>
-    
-
+    {{_address}}
     <table  v-bind:id="id" v-bind:name="name" v-bind:class="[ this._table_class, 'display' ]" width='100%' > 
       <caption>{{label}}</caption>
-
       <thead>
         <tr>
         <th> Name </th>
-        <th> Price </th>
         <th> Offices </th>
         <th> Tables </th>
-        <th> Sqm </th>
+        <th> Sqm (meters<sup>2</sup>) </th>
+        <th> Price (AUD)</th>
         </tr>
       </thead>
-    
       <tbody>
-        <tr v-for='(row , index) in data' :key='row.id' >
-
+        <tr v-for='(row , index) in dataset' :key='row.id' >
           <td v-for='(item, key, index) in row' :key='key' v-if="key != 'id'">
             {{ item }}
           </td>
-
         </tr>
       </tbody>
-      
     </table>
   </div>
 </template>
@@ -77,8 +27,11 @@
 
 <script>
 
+//import jlmabutton from './jlmaButton.vue'
+//import jlmaselect2 from './jlmaSelect2.vue'
 
 export default {
+  name: 'JTable',
   props: {
     _id: {
      type: String,
@@ -98,11 +51,25 @@ export default {
      required: true
    },
 
-   _prices: {
+   _address: {
      type: String,
-     required: true
+     required: false
    },
-   
+   _number_offices: {
+     type: String,
+     required: false
+   },
+   _number_tables: {
+     type: String,
+     required: false
+   },
+   _sqms: {
+     required: false
+   },
+   _prices: {
+     required: false
+   }
+
   },
 
   watch:{
@@ -110,36 +77,31 @@ export default {
   },
   
   computed: {},
-  
+/*
+  components: {
+      jlmabutton,
+      jlmaselect2
+  },
+*/
   data() {
      return {
         id : this._id,
         name : this._name,
         label : this._title,
         headers: this._headers,
-        address : 'Hay',
-        number_offices : null,
-        number_tables : null,
-        sqm_min : null,
-        sqm_max : null,
-        price_min : null,
-        price_max : null,
-        data : null,
-        prices: this._prices
-
-
+        address : this._address,
+        number_offices : this._number_offices,
+        number_tables : this._number_tables,
+        sqms : this._sqms,
+        prices : this._prices,
+        dataset : null,
      }
   },
 
   methods: {        
    		initialise()
       {
-         
-
-
         this.load();
-
-      
       },
 
       load()
@@ -151,31 +113,39 @@ export default {
 
             var bounced = _.debounce(function(){
               bus.$emit("spinner", 0);
+
             }, 500);
 
             bus.$emit("spinner", 1);
 
             axios.post('http://127.0.0.1:9000/', { 
               params:{ 
-                'address'  : this.address,
-                'offices'  : this.number_offices,
-                'tables'  : this.number_tables,
-                'sqm_min'  : this.sqm_min,
-                'sqm_max'  : this.sqm_max,
-                'price_min'  : this.price_min,
-                'price_max'  : this.price_max,
+                'address'  : this._address,
+                'offices'  : this._number_offices,
+                'tables'  : this._number_tables,
+                'sqms'  : this._sqms,
+                'prices'  : this._prices,
                 }
 
               }, 
               config
             )
             .then(function(response) {
-              this.data = response.data;
-              console.log(response.data);
+              
+              _.map(response.data, (value, key) => {
+                  value['price'] = "$ "+ ( value['price'] ).toFixed(1).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+              }); 
+
+              this.dataset = response.data;
               bounced();
+
+              if ( response.data.length == 0 )
+              {
+                alert("NO RECORDS WERE FOUND");
+              }
+
             }.bind(this))
             .catch(function (error) {
-              
               bounced();
             });
 
@@ -187,6 +157,8 @@ export default {
 
   mounted(){
     this.initialise();
+    bus.$on("table_body_load" , this.load );
+    console.log("mounted jtable...");
   },
 
   updated: function(){

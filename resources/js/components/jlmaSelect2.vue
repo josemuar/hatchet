@@ -1,20 +1,12 @@
 <template>
   <div v-bind:class="[fgroup_class, 'form-group' ]">
     <label for="inputtext1" class="ul-form__label">{{ label }}</label>
-    <select class='form-control' v-bind:id="id" v-bind:name="name" :multiple="_multiple == 1" :required="_required == 1"    v-bind:value="value" v-model="value">
+    <select class='form-control' v-bind:id="id" v-bind:name="name" :multiple="_multiple == 1" :required="_required == 1"   v-bind:value="value" v-model="value">
     </select>
-    
-    {{_items}}
   </div>
-
 </template>
 
-
-
 <script>
-
-
-
 export default {
     
     props: {
@@ -35,15 +27,15 @@ export default {
       },
       _fgroup_class: {
        type: String,
-       required: true
+       required: false
      },
      _multiple: {
-       required: true,
-       default: 1
+       required: false,
+       default: 0
      },
      _required: {
-       required: true,
-       default: 1
+       required: false,
+       default: 0
      },
      _items: {
         required: true
@@ -62,18 +54,24 @@ export default {
           content: this.value,
           multiple : false,
           value : this._value,
-          items: JSON.parse(this._items)
+          items: this._items
       }
     },
 
     methods: 
     {
       initialise(){  
+
+
         var vm = this;
 
+        if(this._multiple == 0)
+        vm.items.splice(0, 0, { id: '' , text: 'any' });
+
         $("#"+this.id).select2({
-          theme: 'bootstrap4',
-          data: this.items
+          maximumSelectionLength: 2,
+          theme : 'bootstrap4',
+          data : vm.items
          })
          .val(this.value)
          .trigger("change")
@@ -88,15 +86,11 @@ export default {
       }
 
     },
-
     mounted(){
       this.initialise();
-      this.$on("input" , this.handle );
+      //this.$on("input" , this.handle );
+      console.log("mounted select 2...");
     },
-
-
-    created: function(){
-    
-    }
+    created: function(){}
 };
 </script>
